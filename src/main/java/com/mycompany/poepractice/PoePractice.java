@@ -42,6 +42,7 @@ public class PoePractice {
         System.out.println("Password successfuly captured");
     }else{
         System.out.println("Password is incorrect");
+        System.out.println("peace");
     }
 
     System.out.print("Please enter your cell phone number (e.g. +27817123163): ");
