@@ -27,6 +27,12 @@ public class MessageTest {
         assertTrue(Message.checkRecipientCell("+27718693002"));
     }
 
+    // test a valid local number
+    @Test
+    public void testLocalRecipientFormatSuccess() {
+        assertTrue(Message.checkRecipientCell("0821234567"));
+    }
+
     // test an invalid number
     @Test
     public void testRecipientFormatFailure() {
@@ -41,6 +47,13 @@ public class MessageTest {
         String message = "Hi Mike, can you join us for dinner tonight?";
         String hash = Message.createMessageHash(id, num, message);
         assertEquals("00:0:HITONIGHT", hash);
+    }
+
+    // test hash creation with whitespace text
+    @Test
+    public void testHashCreationWhitespaceText() {
+        String hash = Message.createMessageHash("AB", 3, "   ");
+        assertEquals("AB:3:", hash);
     }
 
     // test that a valid message ID (<= 10 chars) passes
