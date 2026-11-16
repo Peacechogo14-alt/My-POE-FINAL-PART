@@ -1,10 +1,68 @@
 package com.mycompany.poepractice;
 
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class MessageTest {
-    // test that a short message is accepted
+
+    @Test
+    public void testSentMessagesArrayCorrectlyPopulated() {
+        Message.populateTestData();
+        Message[] sent = Message.getSentMessagesArray();
+        assertEquals(2, sent.length);
+        assertEquals("+27817123163", sent[0].getRecipient());
+        assertEquals("Did you get the cake?", sent[0].getText());
+        assertEquals("0817123163", sent[1].getRecipient());
+        assertEquals("It is dinner time !", sent[1].getText());
+    }
+
+    @Test
+    public void testDisplayLongestStoredMessage() {
+        Message.populateTestData();
+        Message longest = Message.findLongestStoredMessage();
+        assertNotNull(longest);
+        assertEquals("Where are you? You are late! I have asked you to be on time.", longest.getText());
+        assertEquals("Longest stored message: Where are you? You are late! I have asked you to be on time.", Message.displayLongestStoredMessage());
+    }
+
+    @Test
+    public void testSearchByMessageID() {
+        Message.populateTestData();
+        Message found = Message.findMessageById("002");
+        assertNotNull(found);
+        assertEquals("+27817123163", found.getRecipient());
+        assertEquals("Where are you? You are late! I have asked you to be on time.", found.getText());
+    }
+
+    @Test
+    public void testSearchAllMessagesForRecipient() {
+        Message.populateTestData();
+        List<Message> matches = Message.findMessagesForRecipient("+27817123163");
+        assertEquals(3, matches.size());
+        assertTrue(matches.stream().anyMatch(m -> m.getText().equals("Where are you? You are late! I have asked you to be on time.")));
+        assertTrue(matches.stream().anyMatch(m -> m.getText().equals("Ok, I am leaving without you.")));
+    }
+
+    @Test
+    public void testDeleteMessageUsingHash() {
+        Message.populateTestData();
+        assertTrue(Message.deleteMessageByHash("M2"));
+        assertNull(Message.findMessageById("002"));
+        assertEquals(1, Message.getStoredMessagesArray().length);
+    }
+
+    @Test
+    public void testDisplayReport() {
+        Message.populateTestData();
+        String report = Message.displayReport();
+        assertTrue(report.contains("Stored Messages Report"));
+        assertTrue(report.contains("Message ID: 002"));
+        assertTrue(report.contains("Message Hash: M2"));
+        assertTrue(report.contains("Recipient: +27817123163"));
+        assertTrue(report.contains("Message: Where are you? You are late! I have asked you to be on time."));
+    }
+
     @Test
     public void testMessageLengthSuccess() {
         String msg = "Hello there";
@@ -12,7 +70,6 @@ public class MessageTest {
         assertEquals("Message ready to send.", res);
     }
 
-    // test that a too-long message gives an error
     @Test
     public void testMessageLengthFailure() {
         StringBuilder sb = new StringBuilder();
@@ -21,25 +78,21 @@ public class MessageTest {
         assertTrue(res.startsWith("Message exceeds 250 characters by"));
     }
 
-    // test a valid international number
     @Test
     public void testRecipientFormatSuccess() {
         assertTrue(Message.checkRecipientCell("+27718693002"));
     }
 
-    // test a valid local number
     @Test
     public void testLocalRecipientFormatSuccess() {
         assertTrue(Message.checkRecipientCell("0821234567"));
     }
 
-    // test an invalid number
     @Test
     public void testRecipientFormatFailure() {
         assertFalse(Message.checkRecipientCell("12345abc"));
     }
 
-    // test hash creation with real example from task
     @Test
     public void testHashCreation() {
         String id = "0012345678";
@@ -49,49 +102,43 @@ public class MessageTest {
         assertEquals("00:0:HITONIGHT", hash);
     }
 
-    // test hash creation with whitespace text
     @Test
     public void testHashCreationWhitespaceText() {
         String hash = Message.createMessageHash("AB", 3, "   ");
         assertEquals("AB:3:", hash);
     }
 
-    // test that a valid message ID (<= 10 chars) passes
     @Test
     public void testMessageIDSuccess() {
         assertTrue(Message.checkMessageID("1234567890"));
     }
 
-    // test that an invalid message ID (> 10 chars) fails
     @Test
     public void testMessageIDFailure() {
         assertFalse(Message.checkMessageID("12345678901"));
     }
 
-    // test hash creation when text is null or empty
     @Test
     public void testHashCreationWithNullText() {
         String hash = Message.createMessageHash("A", 5, null);
         assertEquals("A:5:", hash);
     }
 
-    // test hash creation removes punctuation and concatenates first+last words
     @Test
     public void testHashCreationPunctuation() {
         String hash = Message.createMessageHash("XY", 2, "Hello, world!!!");
         assertEquals("XY:2:HELLOWORLD", hash);
     }
 
-    // test marking a message as sent increments the total counter
     @Test
     public void testMarkAsSentIncrementsTotal() {
+        Message.clearCollections();
         int before = Message.returnTotalMessages();
         Message m = new Message("01", "+27710000000", "hi", 0);
         m.markAsSent();
         assertEquals(before + 1, Message.returnTotalMessages());
     }
 
-    // test null message length handling
     @Test
     public void testMessageLengthNull() {
         String res = Message.checkMessageLength(null);
